@@ -1,0 +1,35 @@
+name: fluent_flutter
+version: 0.0.0
+description: >-
+  Flutter integration for the fluent family — locale lifecycle, FTL asset
+  loading, widget-tree access, and InlineSpan rendering for Project
+  Fluent messages.
+homepage: https://github.com/whuppi/fluent_flutter
+repository: https://github.com/whuppi/fluent_flutter
+issue_tracker: https://github.com/whuppi/fluent_flutter/issues
+
+topics:
+  - i18n
+  - localization
+  - fluent
+  - l10n
+
+environment:
+  sdk: ^3.7.0
+  flutter: ">=3.29.0"
+
+# Path dep on the core while the family is unpublished — the release
+# checklist flips it to a hosted version at publish time.
+dependencies:
+  # The core: FluentBundle, FluentBundleChain, negotiation, markup spans.
+  # No backend and no codegen dependency — any FluentBackend plugs in,
+  # and the typed delegate consumes fluent_gen output generically.
+  fluent_bundle:
+    path: ../fluent_bundle
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter

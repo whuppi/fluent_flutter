@@ -1,0 +1,32 @@
+name: fluent_flutter_example
+description: "Showcase app for fluent_flutter — every surface in one file, driven end to end by the journey tests."
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+  flutter: ">=3.29.0"
+
+dependencies:
+  fluent_flutter:
+    path: ../
+  # CLDR-aware formatting with zero setup — the demo shows real
+  # currency / date / plural output without a native build.
+  fluent_intl:
+    path: ../../fluent_intl
+  flutter:
+    sdk: flutter
+  # Material strings (dialogs, tooltips) for the non-English locales
+  # the locale strip switches to.
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/i18n/
