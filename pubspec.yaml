@@ -1,9 +1,9 @@
 name: fluent_flutter
 version: 0.0.0
 description: >-
-  Flutter integration for the fluent family — locale lifecycle, FTL asset
-  loading, widget-tree access, and InlineSpan rendering for Project
-  Fluent messages.
+  Project Fluent for Flutter. Load .ftl translations from assets, switch
+  languages, read messages in any widget, and render markup. Built on
+  fluent_bundle.
 homepage: https://github.com/whuppi/fluent_flutter
 repository: https://github.com/whuppi/fluent_flutter
 issue_tracker: https://github.com/whuppi/fluent_flutter/issues
@@ -18,12 +18,12 @@ environment:
   sdk: ^3.7.0
   flutter: ">=3.29.0"
 
-# Path dep on the core while the family is unpublished — the release
-# checklist flips it to a hosted version at publish time.
+# Path dependency on fluent_bundle while these packages are unpublished — the
+# release checklist flips it to a hosted version at publish time.
 dependencies:
-  # The core: FluentBundle, FluentBundleChain, negotiation, markup spans.
-  # No backend and no codegen dependency — any FluentBackend plugs in,
-  # and the typed delegate consumes fluent_gen output generically.
+  # fluent_bundle: FluentBundle, FluentBundleChain, language fallback, markup spans.
+  # No backend and no code-generation dependency — any FluentBackend plugs in,
+  # and the typed delegate works with any fluent_gen output.
   fluent_bundle:
     path: ../fluent_bundle
   flutter:
