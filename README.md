@@ -1,16 +1,17 @@
 <!--
-  Banner stays <picture> for GitHub's dark/light. pub.dev strips <picture>
-  when sanitizing the README, so the publish step flattens it to the inner
-  <img> via the release tool's --stamp-readme (the repo copy is untouched).
-  Drop both once pub.dev renders <picture>. Tracking:
-  dart-lang/pub-dev#5923, dart-lang/pub-dev#6363, google/dart-neats#383.
+  Banner stays <picture> for GitHub's dark/light rendering. pub.dev strips
+  <picture> when sanitizing the README and falls back to the inner <img>
+  (the light variant) — which renders fine there. The heavy *-3x.png
+  sources stay tracked in git; only the optimized *-web-min.webp files
+  ship in the pub archive (see .pubignore). Drop the <picture> wrapper
+  once pub.dev renders it. Tracking: dart-lang/pub-dev#5923.
 -->
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)"  srcset="assets/banner_dark-web-min.webp">
-    <source media="(prefers-color-scheme: light)" srcset="assets/banner_light-web-min.webp">
+    <source media="(prefers-color-scheme: dark)"  srcset="assets/fluent_flutter-banner-dark-web-min.webp">
+    <source media="(prefers-color-scheme: light)" srcset="assets/fluent_flutter-banner-light-web-min.webp">
     <img alt="fluent_flutter — Project Fluent, wired into Flutter"
-         src="assets/banner_light-web-min.webp" width="100%">
+         src="assets/fluent_flutter-banner-light-web-min.webp" width="100%">
   </picture>
 </p>
 
@@ -18,15 +19,15 @@
   <a href="https://pub.dev/packages/fluent_flutter"><img src="https://img.shields.io/pub/v/fluent_flutter.svg" alt="pub package"></a>
   <a href="https://pub.dev/packages/fluent_flutter/score"><img src="https://img.shields.io/pub/likes/fluent_flutter" alt="likes"></a>
   <a href="https://pub.dev/packages/fluent_flutter/score"><img src="https://img.shields.io/pub/points/fluent_flutter" alt="pub points"></a>
-  <a href="https://github.com/whuppi/fluent_flutter"><img src="https://img.shields.io/github/stars/whuppi/fluent_bundle?style=flat&logo=github" alt="GitHub stars"></a>
+  <a href="https://github.com/whuppi/fluent_flutter"><img src="https://img.shields.io/github/stars/whuppi/fluent_flutter?style=flat&logo=github" alt="GitHub stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license: MIT"></a>
 </p>
 
-[`fluent_bundle`](https://pub.dev/packages/fluent_bundle), wired into Flutter the way Flutter expects: FTL files load from assets and are discovered automatically, a controller owns the locale lifecycle (device-following or user-picked, switchable live), a `LocalizationsDelegate` plugs into `MaterialApp` like any other, `context.fluent` reads messages anywhere in the tree, translator-authored markup renders as styled + tappable `InlineSpan`s, and editing an `.ftl` file shows up on hot reload.
+[`fluent_bundle`](https://pub.dev/packages/fluent_bundle) with the Flutter parts added. Your `.ftl` files load from assets and are found for you. One controller decides the current language — following the device, or set by the user, and switchable while the app runs. A standard `LocalizationsDelegate` plugs into `MaterialApp`, and `context.fluent` reads messages anywhere in your widgets. Translator-written markup becomes styled, tappable text, and editing an `.ftl` file updates on hot reload.
 
-Every piece is a seam you can replace — bring your own loader, your own backend, your own generated accessor class — and every piece works without the others.
+Every piece can be swapped — your own file loader, your own formatting backend, your own generated Dart class — and each works without the others.
 
-> **This is the front door for Flutter apps.** Building pure Dart — a CLI, a server? [`fluent_bundle`](https://pub.dev/packages/fluent_bundle) alone is the runtime; everything here is Flutter wiring on top of it.
+> **Start here for a Flutter app.** Building pure Dart — a command-line tool, a server? Use [`fluent_bundle`](https://pub.dev/packages/fluent_bundle) directly; everything here is the Flutter layer on top of it.
 
 > **Status:** 0.x. The API can change between minor versions until `1.0.0` — pre-1.0, the minor is the breaking axis, so pin `^0.N.0` and read the changelog on minor bumps.
 
@@ -70,7 +71,7 @@ flutter:
 
 Put one `.ftl` per locale in the asset folder — `assets/i18n/en.ftl`, `assets/i18n/de.ftl` — and that's the whole setup. (Multi-file locales work too: `assets/i18n/de/*.ftl`.)
 
-The backend choice — [`fluent_intl`](https://pub.dev/packages/fluent_intl) (zero-setup, pure Dart) vs [`fluent_icu`](https://pub.dev/packages/fluent_icu) (full ECMA-402, every locale) — is [the core's decision table](https://pub.dev/packages/fluent_bundle#the-backend-seam); this package works identically with either.
+Which backend? [`fluent_intl`](https://pub.dev/packages/fluent_intl) (pure Dart, zero setup) or [`fluent_icu`](https://pub.dev/packages/fluent_icu) (every language and every option) — [fluent_bundle's table lays out the choice](https://pub.dev/packages/fluent_bundle#numbers-dates-and-plurals-need-a-backend). This package works the same way with either.
 
 ---
 
@@ -120,16 +121,16 @@ class MyApp extends StatelessWidget {
 Text(context.fluent.formatMessage('greet', args: {'name': 'Aria'}))
 ```
 
-That's the shape of the whole package: the controller owns *which* locale, the delegate owns *building the localization for it*, and `context.fluent` is how widgets read it.
+That's the whole package in one line: the controller decides *which* language, the delegate *builds the translations for it*, and `context.fluent` is how widgets read them.
 
 ---
 
 ## The controller
 
-`FluentLocaleController` is a `ChangeNotifier` holding one piece of state: the resolved locale chain. Everything else follows from it.
+`FluentLocaleController` is a `ChangeNotifier` that holds one thing: the current language and its fallbacks. Everything else follows from that.
 
 ```dart
-controller.currentLocale;             // 'de-CH' — the resolved head
+controller.currentLocale;             // 'de-CH' — the active language
 controller.localeChain;               // ['de-CH', 'de', 'en'] — what actually loaded
 controller.availableLocales;          // every tag the loader discovered
 controller.followingDeviceLocale;     // true until the user picks one
@@ -141,7 +142,7 @@ await controller.useDeviceLocale();   // back to following the OS setting
 Two behaviors worth knowing, both visible in the [example app](example/):
 
 - **Device-following is live.** While no explicit locale is set, an OS-level language change re-resolves and rebuilds the app — the controller watches `didChangeLocales`, you write nothing.
-- **Resolution is a chain, not a pick.** `de-CH` requested loads `de-CH` → `de` → `en` as a [`FluentBundleChain`](https://pub.dev/packages/fluent_bundle#locale-negotiation-and-bundle-chains): a message missing from Swiss German falls back to German, then English, each formatting in its own locale's context.
+- **It's a fallback chain, not a single pick.** Asking for `de-CH` loads `de-CH` → `de` → `en` (a [`FluentBundleChain`](https://pub.dev/packages/fluent_bundle#locale-negotiation-and-bundle-chains)): a message missing from Swiss German falls back to German, then English — each formatted in its own language.
 
 ---
 
@@ -149,7 +150,7 @@ Two behaviors worth knowing, both visible in the [example app](example/):
 
 ### Loaders
 
-`FluentResourceLoader` is the seam between "the controller wants locale `de`" and "here are FTL sources." Three implementations ship:
+`FluentResourceLoader` is what connects "the controller wants `de`" to "here is the `.ftl` text for `de`." Three come built in:
 
 ```dart
 // The one most apps use — discovers .ftl files from the asset bundle:
@@ -189,7 +190,7 @@ Compose it in front of the asset loader and you have over-the-air translation up
 
 ### Reading messages
 
-`context.fluent` (or `FluentLocalization.of(context)`) is the per-locale surface — the delegate rebuilds it on every locale change, so widgets that read it re-render with the right strings automatically:
+`context.fluent` (or `FluentLocalization.of(context)`) gives you the messages for the current language — the delegate rebuilds it whenever the language changes, so any widget that reads it re-renders with the right strings:
 
 ```dart
 final fluent = context.fluent;
@@ -200,7 +201,7 @@ fluent.formatMessageAsSpans('banner');                      // the markup tree
 fluent.localeChain;                                         // ['de', 'en']
 ```
 
-It's the full `fluent_bundle` formatting surface — selectors, plurals, NUMBER / DATETIME through your chosen backend — scoped to the active chain.
+It's the full `fluent_bundle` formatting — selectors, plurals, NUMBER / DATETIME through your chosen backend — for the current language and its fallbacks.
 
 ### Markup — styled and tappable text
 
@@ -232,7 +233,7 @@ A tag with no style and no builder is a translator/developer mismatch — debug 
 
 ### Typed access with fluent_gen
 
-Using [`fluent_gen`](https://pub.dev/packages/fluent_gen)'s generated accessor class? `TypedFluentDelegate` bridges it — same controller, same lifecycle, typed reads:
+Using [`fluent_gen`](https://pub.dev/packages/fluent_gen)'s generated class? `TypedFluentDelegate` bridges it — same controller, same language handling, typed reads:
 
 ```dart
 localizationsDelegates: [
@@ -250,25 +251,25 @@ localizationsDelegates: [
 Localizations.of<AppMessages>(context, AppMessages)!.welcome(name: 'Aria');
 ```
 
-This package has no dependency on `fluent_gen` — the bridge is a `create` callback, so the generated class stays a `dev_dependency` product and the seam stays open for hand-written wrappers too.
+This package doesn't depend on `fluent_gen` — the bridge is just a `create` callback, so the generated class stays a build-time-only dependency, and you can plug in a hand-written class the same way.
 
 ### Hot reload
 
-Wrap your app once and edited `.ftl` assets show up on hot reload — evicted, re-discovered, re-resolved, rebuilt:
+Wrap your app once, and edited `.ftl` assets update on hot reload — cleared, re-loaded, and rebuilt:
 
 ```dart
 runApp(FluentHotReload(controller: controller, child: MyApp(controller)));
 ```
 
-Debug-only by construction (`kDebugMode` gates it); in release builds it's an inert pass-through. Translation iteration becomes: edit the FTL, press `r`, read the screen.
+It only runs in debug builds (`kDebugMode` gates it); in a release build it does nothing. Editing translations becomes: change the `.ftl`, press `r`, look at the screen.
 
 ---
 
 ## Error handling
 
-The package inherits [`fluent_bundle`'s contract](https://pub.dev/packages/fluent_bundle#error-handling) — formatting never throws, failures are inert values — and adds the same temperament at its own seams:
+This package follows [`fluent_bundle`'s rule](https://pub.dev/packages/fluent_bundle#error-handling) — formatting never throws, failures come back as values — and behaves the same way at its own edges:
 
-- **A locale the loader doesn't have** never crashes resolution — the negotiation chain just lands on the fallback. `fallbackLocale` must exist in the loader, and that *is* asserted in debug builds, because an app whose fallback can't load has no floor to stand on.
+- **A language the loader doesn't have** never crashes anything — the fallback chain just lands on your `fallbackLocale`. That fallback *must* exist in the loader, which is checked in debug builds: an app whose last-resort language can't load has nothing left to show.
 - **A message missing from the head locale** falls down the chain silently (that's the chain's job); a message missing from *every* locale renders the id and records the miss into an `errors:` list you pass to `formatMessage`.
 - **An unknown markup tag** asserts in debug, renders children unstyled in release, and is yours via `onUnknownTag` (see [Markup](#markup--styled-and-tappable-text)).
 
@@ -301,10 +302,10 @@ The README covers the everyday stuff. wanna go deeper?
 
 | Doc | What's inside |
 |---|---|
-| [Architecture](docs/ARCHITECTURE.md) | How it's built: the loader seam, the controller lifecycle, the delegate contract |
+| [Architecture](docs/ARCHITECTURE.md) | How it's built: the loader, the controller, the delegate |
 | [Capabilities](docs/CAPABILITY_ROADMAP.md) | What's shipped, what's planned, what won't happen |
 | [Updating](docs/UPDATING.md) | Maintenance recipes and the pinned Flutter-behavior watchlist |
-| [Example](example/) | Every surface in one app: locale strip, markup, fallback, hot reload — journey-tested |
+| [Example](example/) | Every feature in one app: language switcher, markup, fallback, hot reload — tested end to end |
 
 ---
 
