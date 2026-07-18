@@ -1,5 +1,5 @@
 name: fluent_flutter
-version: 0.0.0
+version: 0.1.0-dev.0
 description: >-
   Project Fluent for Flutter. Load .ftl translations from assets, switch
   languages, read messages in any widget, and render markup. Built on
