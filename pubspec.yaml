@@ -18,8 +18,6 @@ environment:
   sdk: ^3.7.0
   flutter: ">=3.29.0"
 
-# Path dependency on fluent_bundle while these packages are unpublished — the
-# release checklist flips it to a hosted version at publish time.
 dependencies:
   # fluent_bundle: FluentBundle, FluentBundleChain, language fallback, markup spans.
   # No backend and no code-generation dependency — any FluentBackend plugs in,

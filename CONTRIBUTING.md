@@ -13,10 +13,6 @@ make hooks               # activates commit-msg + pre-commit (run once)
 fvm install              # downloads the SDK version pinned in .fvmrc
 fvm dart pub get
 
-# The family is pre-release: the pubspec resolves sibling repos by path.
-# Clone them NEXT TO this checkout (same parent directory):
-#   ../fluent_bundle     https://github.com/whuppi/fluent_bundle
-#   ../fluent_intl       https://github.com/whuppi/fluent_intl (example backend)
 fvm flutter test
 ```
 
@@ -39,9 +35,9 @@ make check
 ```
 
 Runs `lint-shell` + `analyze` (package + example app, each from its
-own root) + `analyze-floor` + `test` (the widget suite, host VM) +
-`test-example` (the example app's journeys through the real delegates).
-The `platforms` gate is blocked-loud pre-release.
+own root) + `analyze-floor` + `platforms` (the same pana pub.dev runs) +
+`test` (the widget suite, host VM) + `test-example` (the example app's
+journeys through the real delegates).
 Must pass. Don't suppress with `// ignore:` — fix the underlying
 issue.
 
