@@ -45,12 +45,12 @@ If you're working on this tool standalone (cloned outside the workspace), the in
 Run these after every code change. A failing test or analyzer error means the task is not done — don't suppress with `// ignore:`, `# noqa`, or `--no-verify`. Fix the underlying issue.
 
 ```bash
-# Setup (one-time) — needs sibling repos ../fluent_bundle and ../fluent_intl
+# Setup (one-time)
 make hooks
 fvm install && fvm flutter pub get
 
 # Full gate
-make check               # lint-shell + analyze (pkg + example) + analyze-floor +
+make check               # lint-shell + analyze (pkg + example) + analyze-floor + platforms +
                          # test (widget suite, host VM) + test-example (journeys)
 ```
 
@@ -77,7 +77,7 @@ When in doubt, read existing code in this repo and match it. Per-repo style cons
 - **Loaders return an EMPTY list for an unknown locale, never throw** — negotiation owns fallback; `fallbackLocale` must exist in the loader (asserted in debug).
 - **An unknown markup tag** asserts in debug and renders children unstyled in release — the caller owns styling via `styles` / `tags` / `applyRecognizer`, and a gesture recognizer must go on LEAF text spans (Flutter fires it only on the span owning text).
 - **Asset-dependent widget tests snapshot FTL in `setUpAll`** — per-test fake-async zones can't serve fresh asset-channel loads; `reassembleApplication()` must be pumped alongside its future or it deadlocks.
-- **The `platforms` gate is blocked-loud pre-release** — pana can't resolve the sibling-repo path dep.
+- **The `platforms` gate runs live** — pana (the same analyzer pub.dev runs) must report all 6 platforms.
 
 ---
 
