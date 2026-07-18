@@ -62,4 +62,10 @@ CONTENT RULES (never change)
 
 ## 0.1.0-dev.0
 
-First release — Flutter integration for the fluent family: asset FTL loading with discovery, locale lifecycle controller, MaterialApp delegates, InlineSpan markup rendering, hot reload.
+First prerelease — Project Fluent for Flutter, built on fluent_bundle.
+
+- **Setup:** load `.ftl` translations from your assets (found automatically) and plug into `MaterialApp`. One controller owns the current language — following the device or set by the user, switchable while the app runs.
+- **Reading:** `context.fluent` reads messages in any widget and rebuilds when the language changes.
+- **Markup:** translator-written tags render as styled, tappable text; a bridge wires in fluent_gen's typed class.
+- **Hot reload:** editing an `.ftl` file updates on hot reload (debug builds only).
+- **Platforms:** widgets and pure Dart, no platform code — every platform.
