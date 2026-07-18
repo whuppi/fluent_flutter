@@ -6,8 +6,9 @@
 # Uses fvm by default. Contributors without fvm can override:
 # make check DART=dart FLUTTER=flutter
 # fluent_flutter is a Flutter package — the suite runs on flutter_test
-# (host VM, no device). example/ is its own Flutter app package,
-# resolved / formatted / analyzed from its OWN root.
+# (host VM, no device, no browser). example/ is its own Flutter app
+# package, resolved / analyzed from its OWN root (analyze_core gives it
+# a `flutter analyze` pass; the journeys drive its real UI).
 # ═══════════════════════════════════════════════════════════════════
 
 DART    ?= fvm dart
@@ -51,3 +52,76 @@ platforms:
 	@echo "  Activates at release when the family deps go hosted — see the"
 	@echo "  family release checklist (fluent_bundle/docs/UPDATING.md §6)."
 	@exit 2
+
+# ═══════════════════════════════════════════════════════════════════
+# § 2 — Analyze
+# ═══════════════════════════════════════════════════════════════════
+#
+# make analyze  Resolve, format, analyze at --fatal-infos. Resolve runs
+#               FIRST because `dart format` reads the resolved language
+#               version — an unresolved tree formats differently.
+#               Locally format fixes in place; under CI a diff fails.
+#               analyze_core gives example/ its own `flutter analyze`
+#               pass from its own root.
+
+analyze:
+	@echo "=== Flutter: pub get ==="
+	@$(FLUTTER) pub get
+	@echo "=== Dart: format ==="
+	@if [ -n "$$CI" ]; then \
+	  $(DART) format --set-exit-if-changed lib test; \
+	else \
+	  $(DART) format lib test; \
+	fi
+	@echo "=== analyze (shared core) ==="
+	@DART="$(DART)" FLUTTER="$(FLUTTER)" ANALYZE_DIRS="lib test" bash tool/analyze_core.sh
+
+# make analyze-floor  Resolve to the OLDEST in-range dependencies and
+#                     analyze the shipped code (lib). The wide lower
+#                     bounds are only honest if the code analyzes against
+#                     them, not just the newest a fresh resolve picks.
+#                     Tests are excluded on purpose — a consumer sees
+#                     lib, never your tests. Snapshots and restores the
+#                     lock so a local run leaves the tree clean.
+analyze-floor:
+	@$(FLUTTER) pub get >/dev/null
+	@cp pubspec.lock pubspec.lock.floorbak; \
+	$(FLUTTER) pub downgrade >/dev/null && $(DART) analyze --fatal-infos lib; rc=$$?; \
+	mv pubspec.lock.floorbak pubspec.lock; \
+	$(FLUTTER) pub get >/dev/null 2>&1 || true; \
+	exit $$rc
+
+# make format   Format in place (analyze also formats; this is the
+#               standalone entry).
+format:
+	@$(DART) format lib test
+
+# ═══════════════════════════════════════════════════════════════════
+# § 3 — Test
+# ═══════════════════════════════════════════════════════════════════
+#
+# make test     The full flutter_test suite (host VM) — loader, delegate,
+#               controller, markup, hot reload.
+
+test:
+	@echo "=== Flutter test suite (host VM) ==="
+	@mkdir -p $(TEST_RESULTS_DIR)
+	@$(FLUTTER) test $(VERBOSE) $(TIMEOUT) --file-reporter json:$(TEST_RESULTS_DIR)/vm.json
+
+# make test-example  The demo's journeys — the exact UI a user sees driven
+#                    end to end through the real asset loader, bundled FTL,
+#                    delegates, and IntlBackend: locale switching, CLDR
+#                    plurals, markup taps, the fallback chain.
+test-example:
+	@echo "=== Example: journeys (host VM, the demo UI end to end) ==="
+	@mkdir -p $(TEST_RESULTS_DIR)
+	cd example && $(FLUTTER) test $(VERBOSE) $(TIMEOUT) test/journeys --file-reporter json:../$(TEST_RESULTS_DIR)/example.json
+
+# ═══════════════════════════════════════════════════════════════════
+# § 4 — Clean
+# ═══════════════════════════════════════════════════════════════════
+
+clean:
+	@$(FLUTTER) clean >/dev/null 2>&1 || true
+	@rm -rf $(TEST_RESULTS_DIR)
+	@echo "✓ clean"
