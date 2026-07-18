@@ -24,8 +24,7 @@ dependencies:
   # fluent_bundle: FluentBundle, FluentBundleChain, language fallback, markup spans.
   # No backend and no code-generation dependency — any FluentBackend plugs in,
   # and the typed delegate works with any fluent_gen output.
-  fluent_bundle:
-    path: ../fluent_bundle
+  fluent_bundle: ^0.1.0
   flutter:
     sdk: flutter
 
