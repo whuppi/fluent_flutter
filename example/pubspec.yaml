@@ -12,8 +12,7 @@ dependencies:
     path: ../
   # CLDR-aware formatting with zero setup — the demo shows real
   # currency / date / plural output without a native build.
-  fluent_intl:
-    path: ../../fluent_intl
+  fluent_intl: ^0.1.0
   flutter:
     sdk: flutter
   # Material strings (dialogs, tooltips) for the non-English locales
