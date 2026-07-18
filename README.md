@@ -61,7 +61,7 @@ Every piece can be swapped — your own file loader, your own formatting backend
 
 ```yaml
 dependencies:
-  fluent_flutter:
+  fluent_flutter: ^0.1.0
   fluent_intl:        # or fluent_icu — the formatting backend (see below)
 
 flutter:
