@@ -60,24 +60,26 @@ packages:
   fluent_bundle:
     dependency: transitive
     description:
-      path: "../../fluent_bundle"
-      relative: true
-    source: path
-    version: "0.1.0-alpha.1"
+      name: fluent_bundle
+      sha256: e6a0457968c059e31fc675eb5d07a773ff8621076205421b0e408f32616223bc
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   fluent_flutter:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.0.0"
   fluent_intl:
     dependency: "direct main"
     description:
-      path: "../../fluent_intl"
-      relative: true
-    source: path
-    version: "0.1.0-dev.0"
+      name: fluent_intl
+      sha256: bb22c12961228d64b3acd0144f6728c4c4a1ae1022a9c36c10ab212d775fa25a
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -105,10 +107,10 @@ packages:
     dependency: transitive
     description:
       name: html
-      sha256: "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602"
+      sha256: "43b67b8f43321ab066817dfac5619596c98bb1b61624e77203bb4351785f9699"
       url: "https://pub.dev"
     source: hosted
-    version: "0.15.6"
+    version: "0.15.7"
   intl:
     dependency: transitive
     description:
@@ -254,10 +256,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "0016aef94fc66495ac78af5859181e3f3bf2026bd8eecc72b9565601e19ab360"
+      sha256: "5f37239c4851efcef929cea7824e76df7f2f0970aef85d66bbc430afa40e72f0"
       url: "https://pub.dev"
     source: hosted
-    version: "15.2.0"
+    version: "15.3.0"
 sdks:
   dart: ">=3.10.4 <4.0.0"
   flutter: ">=3.29.0"
